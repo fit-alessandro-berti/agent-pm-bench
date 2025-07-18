@@ -1,10 +1,10 @@
-# Agentic Process‑Mining LLM Benchmark
+# Agentic Process Mining LLM Benchmark
 
 ![Screenshot of the benchmark UI](bench_screenshot.png)
 
 ## What is being measured?
 
-This benchmark evaluates **large‑language models (LLMs)** on their ability to act as **autonomous process‑mining analysts**.  Given only an event‑log CSV, the model must deliver a complete written report that would be useful to a business stakeholder.
+This benchmark evaluates **large‑language models (LLMs)** on their ability to act as **autonomous process mining analysts**.  Given only an event‑log CSV, the model must deliver a complete written report that would be useful to a business stakeholder.
 
 ## How we measure it
 
@@ -13,7 +13,7 @@ The pipeline consists of three simple, reproducible steps:
 1. **Answer generation (`answer.py`)**
    For every `<dataset>.csv` found in **`data/`** the script spawns a thread that:
 
-   1. Copies the prompt *“Provide a complete analytical report based on the provided process‑mining event log”* to your clipboard.
+   1. Copies the prompt *“Provide a complete analytical report based on the provided process mining event log”* to your clipboard.
    2. Waits for you to paste it into the UI of a configured answering model (e.g. *o4‑mini*, *o3*, *o3‑pro*).
    3. Opens `answers/<dataset>__<model>.txt` where you paste the model’s response.
       Empty answer files are cleaned up automatically by `clear_nonempty_files()`.
