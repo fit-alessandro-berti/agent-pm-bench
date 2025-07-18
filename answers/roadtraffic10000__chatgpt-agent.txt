@@ -1,0 +1,175 @@
+Process Mining Analysis of Road Traffic Event Log
+=================================================
+
+1 Introduction
+--------------
+
+Process mining uses historical event data to discover, monitor and improve processes. An event log contains records of events; each event corresponds to an activity that was executed in a process, multiple events are linked together in a process instance (case) and each case forms a sequence of events ordered by their timestamps[fluxicon.com](https://fluxicon.com/book/read/dataext/#:~:text=In%20contrast%20to%20the%20data,In%20an%20event%20log). To perform process mining at least three columns are needed: a **Case ID** identifying each process instance, an **activity name** describing the executed step and at least one **timestamp** indicating when the activity occurred[fluxicon.com](https://fluxicon.com/book/read/dataext/#:~:text=According%20to%20the%20mental%20model,process%20perspective%20on%20the%20data).
+
+The road‑traffic log (`roadtraffic10000.csv`) contains 37 468 events from 10 002 fines processed between 2 January 2000 and 17 June 2013. Each event has a case identifier (`case:concept:name`), activity name (`concept:name`) and timestamp (`time:timestamp`). Additional attributes include the responsible resource, article of the traffic code, vehicle class, amount and payment information. All events have the lifecycle transition "complete", indicating they correspond to the completion of an activity.
+
+This report applies process‑mining techniques to this event log. After preprocessing, cases are sorted chronologically by their timestamps and analysed to extract performance metrics, activity frequencies, common variants and directly‑follows relations. Visualisations accompany the analysis to facilitate interpretation.
+
+2 Data preparation and method
+-----------------------------
+
+### 2.1 Mapping to process‑mining requirements
+
+Following the basic requirements for process mining[fluxicon.com](https://fluxicon.com/book/read/dataext/#:~:text=According%20to%20the%20mental%20model,process%20perspective%20on%20the%20data), the log was mapped as follows:
+
+| Element | Column in log | Description |
+| --- | --- | --- |
+| **Case ID** | `case:concept:name` | Identifies each fine; events with the same case ID belong to the same process instance. |
+| **Activity** | `concept:name` | Describes the traffic‑fine activity, e.g., *Create Fine* or *Payment*. |
+| **Timestamp** | `time:timestamp` | UTC timestamp when the activity occurred. |
+
+Other attributes (e.g., `article`, `amount`, `points`) were used for descriptive statistics but not for ordering events.
+
+### 2.2 Computations
+
+1.  **Chronological ordering:** For each case, events were sorted by their timestamp to reconstruct the execution order.
+
+2.  **Case performance metrics:** The duration of a case was computed as the time between its first and last event, which corresponds to the *case duration* metric[fluxicon.com](https://fluxicon.com/book/read/filtering/#:~:text=%3E%20%20%20,Refer%20also). The number of events per case was also determined[fluxicon.com](https://fluxicon.com/book/read/filtering/#:~:text=%3E%20%20%20,Refer%20also).
+
+3.  **Variant analysis:** A *variant* is an activity sequence pattern; all cases that follow exactly the same activity sequence belong to the same variant[fluxicon.com](https://fluxicon.com/book/read/filtering/#:~:text=Figure%204%20you%20can%20see,then%20you%20can%20learn%20more). Variants were extracted by converting each case's ordered sequence of activities into a tuple and counting identical sequences.
+
+4.  **Directly‑follows relations:** A *Directly‑Follows Graph (DFG)* is a directed graph where each node represents an activity and a directed edge from activity A to activity B indicates that **A** directly follows **B** in the process[vationventures.com](https://www.vationventures.com/glossary/directly-follows-graph-definition-explanation-and-use-cases#:~:text=A%20Directly,activity%20B%20in%20the%20process). The edges can be weighted by frequency to show how often the sequence occurs[vationventures.com](https://www.vationventures.com/glossary/directly-follows-graph-definition-explanation-and-use-cases#:~:text=The%20edges%20in%20a%20Directly,useful%20in%20analyzing%20the%20process). For each case, all adjacent activity pairs were collected to compute the number of times each pair occurred.
+
+5.  **Visualisation:** Charts were generated to summarise activity frequencies, case duration distribution, top directly‑follows pairs and the monthly number of cases.
+
+3 Overview statistics
+---------------------
+
+### 3.1 Global metrics
+
+The table below summarises general statistics of the event log.
+
+| Metric | Value |
+| --- | --- |
+| **Number of events** | 37 468 events |
+| **Number of cases** | 10 002 fines |
+| **Number of activities** | 11 unique activity names |
+| **Number of resources** | 61 unique `org:resource` values |
+| **Earliest event** | 2000‑01‑02 23:00:00 UTC |
+| **Latest event** | 2013‑06‑17 22:00:00 UTC |
+| **Average events per case** | 3.75 events per case (median = 5, min = 2, max = 10) |
+| **Total sum of fines (`amount`)** | 963 066.39 (monetary units) |
+| **Total payment collected** | 237 574.61 (`paymentAmount`) |
+
+### 3.2 Activity frequencies
+
+The log contains 11 activities. The five most frequent are shown below (counts are per event):
+
+| Activity | Count | Share of events |
+| --- | --- | --- |
+| **Create Fine** | 10 237 | 27.3 % |
+| **Send Fine** | 7 195 | 19.2 % |
+| **Insert Fine Notification** | 5 371 | 14.3 % |
+| **Add penalty** | 5 367 | 14.3 % |
+| **Payment** | 4 875 | 13.0 % |
+
+A horizontal bar chart summarising the top ten activities is provided below.
+
+![top_activities.png](https://files09.oaiusercontent.com/file-9zh9JjeUUZ8MtsG34PAF3U?se=2025-07-18T08%3A34%3A52Z&sp=r&sv=2024-08-04&sr=b&rscc=max-age%3D299%2C%20immutable%2C%20private&rscd=attachment%3B%20filename%3Dtop_activities.png&sig=E0lAUPWHasRA5oN/Czr7SfwQiE2R/cOTI7DkwBUEILg%3D)
+
+### 3.3 Case performance
+
+According to the performance metrics in process mining[fluxicon.com](https://fluxicon.com/book/read/filtering/#:~:text=%3E%20%20%20,Refer%20also), the *case duration* is the time between the first and last event of a case. In this log, cases range from **0 days** (cases where all events occur at the same time) to **4 308 days** (~11.8 years). The distribution is skewed: half of the cases finish within about **206 days**, whereas 25 % exceed **606 days** and a small fraction continues for several years. The table below summarises the statistics (durations are reported in days).
+
+| Statistic | Value (days) |
+| --- | --- |
+| **Minimum** | 0 days |
+| **Median** | 205.98 days |
+| **Mean** | 344.75 days |
+| **75th percentile** | 606.0 days |
+| **90th percentile** | 787.96 days |
+| **95th percentile** | 961.0 days |
+| **99th percentile** | 1 232.04 days |
+| **Maximum** | 4 308.0 days |
+
+The histogram below (truncated at 1 500 days to improve readability) shows how case durations are distributed. A large number of fines are settled within a year, but a significant tail of cases lasts multiple years, indicating slow resolution and possible escalation.
+
+![case_duration_hist_days.png](https://files.oaiusercontent.com/file-8njsPD2XRoiW7J7SvqY46S?se=2025-07-18T08%3A34%3A52Z&sp=r&sv=2024-08-04&sr=b&rscc=max-age%3D299%2C%20immutable%2C%20private&rscd=attachment%3B%20filename%3Dcase_duration_hist_days.png&sig=V3JjevQVr1eeviZwjVyuiMBqKwbEborhNUgZ5Bf14mo%3D)
+
+### 3.4 Monthly load
+
+Grouping cases by the month of their first event reveals workload trends over time. The following line chart counts how many fines started in each month between 2000 and 2013.
+
+![monthly_cases.png](https://files.oaiusercontent.com/file-W5FRbcLKGgyyG4yhumSB8N?se=2025-07-18T08%3A34%3A52Z&sp=r&sv=2024-08-04&sr=b&rscc=max-age%3D299%2C%20immutable%2C%20private&rscd=attachment%3B%20filename%3Dmonthly_cases.png&sig=dcUrmafdFio4C9FkW1jaOOeztYFN39Nsvzkq6xnK%2BSg%3D)
+
+There are clear peaks around 2002--2003 and 2009--2011. Although seasonal effects are not obvious, the high spikes suggest batch processing or periods of intensified enforcement.
+
+4 Variant analysis
+------------------
+
+A *variant* is an ordered sequence of activities; all cases following exactly the same sequence belong to one process variant[fluxicon.com](https://fluxicon.com/book/read/filtering/#:~:text=Figure%204%20you%20can%20see,then%20you%20can%20learn%20more). The log contains **303 unique variants**. However, the process is dominated by a few high‑frequency variants. The table below lists the top five variants and their coverage.
+
+| Rank | Variant (sequence of activities) | Cases | Share of cases |
+| --- | --- | --- | --- |
+| **1** | Create Fine → Send Fine → Insert Fine Notification → Add penalty → Send for Credit Collection | 3 798 | 37.97 % |
+| **2** | Create Fine → Payment | 2 991 | 29.90 % |
+| **3** | Create Fine → Send Fine | 1 394 | 13.94 % |
+| **4** | Create Fine → Send Fine → Insert Fine Notification → Add penalty → Payment | 649 | 6.49 % |
+| **5** | Create Fine → Send Fine → Insert Fine Notification → Add penalty → Payment → Payment | 245 | 2.45 % |
+
+Together, these five variants cover about 91 % of all cases. The most common path represents a typical escalation: a fine is created, sent to the offender, a notification is inserted, an additional penalty is added and finally the case is sent for credit collection. The second most common variant corresponds to a fine that is paid immediately after creation, indicating a "first‑time right" resolution. Variants with multiple **Payment** events suggest that offenders may pay in installments or that partial payments are recorded separately.
+
+5 Directly‑Follows analysis
+---------------------------
+
+A Directly‑Follows Graph (DFG) is used in process mining to represent the sequence of activities as a directed graph where nodes are activities and edges show that one activity directly follows another[vationventures.com](https://www.vationventures.com/glossary/directly-follows-graph-definition-explanation-and-use-cases#:~:text=A%20Directly,activity%20B%20in%20the%20process). Edges can be weighted to indicate how frequently a sequence occurs[vationventures.com](https://www.vationventures.com/glossary/directly-follows-graph-definition-explanation-and-use-cases#:~:text=The%20edges%20in%20a%20Directly,useful%20in%20analyzing%20the%20process). The table below lists the ten most frequent directly‑follows relations and their relative frequency (percentage of all transitions).
+
+| Rank | Pair (A → B) | Frequency | Share of transitions |
+| --- | --- | --- | --- |
+| **1** | Create Fine → Send Fine | 6 976 | 25.40 % |
+| **2** | Send Fine → Insert Fine Notification | 5 351 | 19.48 % |
+| **3** | Insert Fine Notification → Add penalty | 4 854 | 17.67 % |
+| **4** | Add penalty → Send for Credit Collection | 3 835 | 13.96 % |
+| **5** | Create Fine → Payment | 3 023 | 11.01 % |
+| **6** | Add penalty → Payment | 1 257 | 4.58 % |
+| **7** | Payment → Add penalty | 269 | 0.98 % |
+| **8** | Insert Fine Notification → Payment | 266 | 0.97 % |
+| **9** | Payment → Payment | 265 | 0.96 % |
+| **10** | Send Fine → Payment | 226 | 0.82 % |
+
+The bar chart below visualises these relations by frequency.
+
+![top_pairs.png](https://files08.oaiusercontent.com/file-3RcmpaupiwwjfhCDz84FAR?se=2025-07-18T08%3A34%3A52Z&sp=r&sv=2024-08-04&sr=b&rscc=max-age%3D299%2C%20immutable%2C%20private&rscd=attachment%3B%20filename%3Dtop_pairs.png&sig=v5zvjAeilg4GjSu6ycJmTcMO5VrJgIMsftvyTiaY9l0%3D)
+
+**Interpretation.** The dominant path (*Create Fine → Send Fine → Insert Fine Notification → Add penalty → Send for Credit Collection*) mirrors the most frequent variant and represents the default escalation when a fine is not paid promptly. The second strongest edge (*Create Fine → Payment*) highlights cases where offenders pay directly after the fine is created. Several low‑frequency edges indicate exceptional or looping behaviour, such as **Payment → Add penalty** (indicating that a penalty was added despite a payment) and **Payment → Payment** (multiple payments).
+
+6 Additional analyses
+---------------------
+
+### 6.1 Financial attributes
+
+The `amount` column holds the nominal fine for each event (often recorded at the time of notification) and `paymentAmount` records actual payments. Across all events, the total nominal fines sum to **963 066.39** monetary units, whereas total recorded payments amount to **237 574.61**. The difference suggests that many fines remain unpaid and are escalated to credit collection.
+
+The average fine amount (excluding missing values) is **≈ 62.7** per event, whereas the average payment recorded is **≈ 46.8**. The `totalPaymentAmount` attribute (present only in payment‑related events) has a mean of **≈ 17.63**, which likely represents incremental payments or installment amounts.
+
+### 6.2 Articles and points
+
+The `article` column refers to articles of the traffic code. About 27 k events lack an article. The most common articles among events with a value are **157**, **7** and **158**, together accounting for roughly 80 % of the non‑missing article entries. The `points` attribute (license points) is zero in most recorded events; only a small number of events record positive points.
+
+### 6.3 Resources
+
+The `org:resource` column identifies the officer or system executing an event. There are 61 distinct resources. The top five resources (IDs 538, 550, 541, 537 and 559) together perform about 2 481 events (≈ 6.6 % of all events). The distribution is skewed: most resources execute only a handful of events, suggesting that tasks are widely distributed or that many resources were involved over the 13‑year period.
+
+7 Discussion and conclusions
+----------------------------
+
+This analysis reveals a relatively structured traffic‑fine handling process. A small number of variants and directly‑follows relations dominate the log, indicating that most fines follow a predictable path. The typical case starts with *Create Fine*, proceeds through *Send Fine*, *Insert Fine Notification* and *Add penalty* and either ends with *Send for Credit Collection* (if unpaid) or with **Payment** (if the offender pays). The high frequency of the *Create Fine → Payment* path shows that almost 30 % of fines are paid immediately, reflecting compliant behaviour.
+
+However, the performance analysis highlights a long tail of unresolved cases. The median case lasts about **206 days**, and more than 5 % of cases take over **961 days** (2.6 years) to conclude. A small number of cases remain open for more than **11 years**. Such long durations may result from appeals, administrative delays, or difficulties in locating offenders.
+
+The temporal analysis shows peaks in case volume around 2002--2003 and again around 2009--2011. These peaks might correspond to policy changes, increased enforcement campaigns or data extraction irregularities. Further investigation could correlate peaks with external events or system changes.
+
+Potential improvements to the process include:
+
+-   **Encouraging prompt payment:** Since fines paid immediately avoid penalties and credit collection, communication could emphasise the benefits of early payment.
+
+-   **Reducing delays in escalation:** Cases that eventually require credit collection linger for hundreds of days. Automated reminders and stricter escalation schedules might shorten case durations.
+
+-   **Data quality enhancements:** Many events lack values for `article`, `points` and other attributes. Ensuring that all relevant information is captured will improve transparency and enable more precise analyses.
+
+Overall, process mining provides a clear picture of the traffic‑fine handling process. By combining event‑log data with process mining definitions[fluxicon.com](https://fluxicon.com/book/read/dataext/#:~:text=In%20contrast%20to%20the%20data,In%20an%20event%20log)[vationventures.com](https://www.vationventures.com/glossary/directly-follows-graph-definition-explanation-and-use-cases#:~:text=A%20Directly,activity%20B%20in%20the%20process), we identified the dominant pathways, quantified performance and highlighted opportunities for improvement.

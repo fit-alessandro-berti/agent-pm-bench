@@ -1,7 +1,9 @@
+import os.path
+
 from common import *
 
 
-ANSWERING_MODEL = "o3-pro"
+ANSWERING_MODEL = "chatgpt-agent"
 
 
 if __name__ == "__main__":
@@ -12,6 +14,7 @@ if __name__ == "__main__":
         target_path = evlog.split(".")[0] + "__" + ANSWERING_MODEL + ".txt"
         target_path = os.path.join("answers", target_path)
 
-        t = PerformPromptThread(target_path, "Provide a complete analytical report based on the provided process mining event log", ANSWERING_MODEL)
-        t.start()
-        t.join()
+        if not os.path.exists(target_path):
+            t = PerformPromptThread(target_path, "Provide a complete analytical report based on the provided process mining event log", ANSWERING_MODEL)
+            t.start()
+            t.join()

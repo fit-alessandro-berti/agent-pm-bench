@@ -1,0 +1,105 @@
+Process Mining Analysis of the BPIC2020 Domestic Event Log
+==========================================================
+
+Introduction
+------------
+
+Process mining starts with **event logs**, structured records that capture how business activities are executed over time. Event logs record **events** (individual actions), link them to a **case or process instance**, and provide a **timestamp** to order the events[fluxicon.com](https://fluxicon.com/book/read/dataext/#:~:text=that%20is%20used%20for%20process,In%20an%20event%20log). A case corresponds to a complete process instance, such as handling a purchase order or a loan application[fluxicon.com](https://fluxicon.com/book/read/dataext/#:~:text=A%20case%20is%20a%20specific,For%20example). To build an event log, at least three elements are required: a **case identifier**, an **activity name**, and a **timestamp**[fluxicon.com](https://fluxicon.com/book/read/dataext/#:~:text=According%20to%20the%20mental%20model,process%20perspective%20on%20the%20data). Additional attributes (e.g., the responsible resource or the monetary amount) provide context[processmaker.com](https://www.processmaker.com/blog/what-are-event-logs-in-process-mining/#:~:text=Process%20mining%20assumes%20the%20existence,specific%20cases%2C%20activities%2C%20and%20timestamps). Process‑mining tools use these logs to reconstruct the actual flow of a process, measure performance and identify deviations[processmaker.com](https://www.processmaker.com/blog/what-are-event-logs-in-process-mining/#:~:text=Process%20mining%20assumes%20the%20existence,specific%20cases%2C%20activities%2C%20and%20timestamps).
+
+When analysing a process, key summary metrics include the number of **events**, **cases**, **activities** and **attributes**, as well as the **mean and median case duration** and the time frame covered by the log[fluxicon.com](https://fluxicon.com/book/read/statisticsview/#:~:text=In%20the%20upper%20right%20area,The%20summary%20figures%20are). The **case duration**, also called throughput time, measures the time between the first and last event of a case[fluxicon.com](https://fluxicon.com/book/read/statisticsview/#:~:text=The%20case%20duration%20metric%20shows,84%20days%20and%2013%20hours). These metrics provide a high‑level overview before drilling down into the process dynamics.
+
+Data overview
+-------------
+
+The BPIC2020 domestic event log contains 56 437 events across **10 500 cases** and **17 distinct activities**. The earliest recorded event occurred on **9 January 2017**, while the latest event in this log is from **17 June 2019**, so the data covers roughly two and a half years. Each event includes the case identifier (`case:concept:name`), the activity (`concept:name`), a timestamp, the amount associated with the declaration and organisational information (resource and role).
+
+-   **Number of events:** 56 437
+
+-   **Number of cases:** 10 500
+
+-   **Number of activities:** 17
+
+-   **Time frame:** 2017‑01‑09 to 2019‑06‑17
+
+-   **Organisational roles:** 7 roles (EMPLOYEE, SUPERVISOR, ADMINISTRATION, BUDGET OWNER, PRE_APPROVER, MISSING and UNDEFINED). Most events are executed with `UNDEFINED` (20 084 events), followed by employees (13 031) and supervisors (10 425).
+
+The monetary amount associated with each case averages **≈ US$86.42** (median ≈ US$41.51) and ranges from **0** to **≈ US$3 292**, indicating that most declarations are low‑value with a few high‑value outliers. Each case contains on average **5.37 events** (median = 5). The case duration distribution (measured between the first and last event) has a median of **≈ 176 hours (~7.3 days)** and a mean of **≈ 277 hours (~11.5 days)**, with some cases exceeding 9 000 hours.
+
+Process-flow characteristics
+----------------------------
+
+### Activity frequency
+
+The horizontal bar chart below shows the frequency of each activity. The process starts with **"Declaration SUBMITTED by EMPLOYEE"** in every case. Subsequent activities include approvals, requests for payment and handling payments. Final approval by a supervisor (`Declaration FINAL_APPROVED by SUPERVISOR`), **Payment Handled** and **Request Payment** are among the most frequent steps, each occurring around 10 000 times. Occasional rejections and pre‑approval steps occur much less frequently.
+
+![activity_counts_horizontal.png](https://files.oaiusercontent.com/file-QHgcppMG3fBmdn4CDWAWyu?se=2025-07-18T08%3A20%3A31Z&sp=r&sv=2024-08-04&sr=b&rscc=max-age%3D299%2C%20immutable%2C%20private&rscd=attachment%3B%20filename%3Dactivity_counts_horizontal.png&sig=sLoh1N6X3yWprci8R7VcUT5Q9XMBGaw3leayy1ublfs%3D)
+
+### Typical process path and directly‑follows analysis
+
+To understand the sequence of activities, a directly‑follows analysis was performed. After sorting each case by timestamp, the most frequent transitions between consecutive activities were identified. The typical "happy path" is:
+
+1.  **Declaration SUBMITTED by EMPLOYEE → Declaration APPROVED by ADMINISTRATION** (8 202 cases).
+
+2.  **Declaration APPROVED by ADMINISTRATION → Declaration FINAL_APPROVED by SUPERVISOR** (5 133 cases).
+
+3.  **Declaration FINAL_APPROVED by SUPERVISOR → Request Payment → Payment Handled** (10 037 cases for both steps).
+
+This indicates a straightforward process where, after administrative approval, a supervisor grants final approval, a payment request is created and the payment is handled. An alternative path occurs when the budget owner must approve the declaration: **Declaration APPROVED by ADMINISTRATION → Declaration APPROVED by BUDGET OWNER → Declaration FINAL_APPROVED by SUPERVISOR** (2 820 and 2 788 cases, respectively).
+
+Rejection loops also exist. For example, when a declaration is rejected by the administration, it often leads to **Declaration REJECTED by EMPLOYEE → Declaration SUBMITTED by EMPLOYEE** (1 081 cases) or **Declaration REJECTED by ADMINISTRATION → Declaration REJECTED by EMPLOYEE** (928 cases). These loops add waiting time and increase the overall throughput time.
+
+### Final outcome distribution
+
+The following chart shows the distribution of the final event for each case. **Payment Handled** is the final activity for the vast majority of cases (≈ 10 043 cases). Rejections occur far less frequently: declarations can end in a rejection by the employee, administration, supervisor or be saved and not further processed.
+
+![final_event_dist_horizontal.png](https://files.oaiusercontent.com/file-4gMLQgPkQVrMiep9LAKm14?se=2025-07-18T08%3A20%3A31Z&sp=r&sv=2024-08-04&sr=b&rscc=max-age%3D299%2C%20immutable%2C%20private&rscd=attachment%3B%20filename%3Dfinal_event_dist_horizontal.png&sig=KMTO%2BVDUJQFhemIdiI0yI9XT4C1cmN8aoGfhE6Ou9dI%3D)
+
+Performance analysis
+--------------------
+
+### Case duration (throughput time)
+
+Process‑mining literature defines case duration as the throughput time between the first and last event of each case[fluxicon.com](https://fluxicon.com/book/read/statisticsview/#:~:text=The%20case%20duration%20metric%20shows,84%20days%20and%2013%20hours). The histogram below shows the distribution of case durations (clipped at 1 000 hours for readability). Most cases complete within 200--400 hours (~8--17 days). The median duration is ≈ 175.9 hours (~7.3 days), while the mean is higher (≈ 276.6 hours) due to a long tail of slow cases. A few cases run for more than 1 000 hours, which may indicate data issues or prolonged waiting times.
+
+![case_duration_hist.png](https://files07.oaiusercontent.com/file-4ocKnwvic7JYaxbQUsY2Dy?se=2025-07-18T08%3A20%3A31Z&sp=r&sv=2024-08-04&sr=b&rscc=max-age%3D299%2C%20immutable%2C%20private&rscd=attachment%3B%20filename%3Dcase_duration_hist.png&sig=a1eQ27rTATWa2Am13DwIghVD/HFy10rOdsrVeEBxwbo%3D)
+
+When segmented by the final outcome, the mean duration for cases ending with **Payment Handled** is ≈ 278.8 hours. Cases rejected by employees are slightly faster (≈ 261 hours), whereas administrative rejections take extremely long (≈ 3 834 hours, influenced by outliers). Cases that were simply saved by employees have zero duration because they consist of a single event.
+
+### Events per case
+
+The number of events per case influences the overall lead time. Most cases contain **5--6 events**, as shown in the histogram below. Cases with more than 10 events are rare and usually correspond to rework or repeated rejections.
+
+![events_per_case_hist.png](https://files09.oaiusercontent.com/file-LjSPyM6v3i9nQu3vGySQF4?se=2025-07-18T08%3A20%3A31Z&sp=r&sv=2024-08-04&sr=b&rscc=max-age%3D299%2C%20immutable%2C%20private&rscd=attachment%3B%20filename%3Devents_per_case_hist.png&sig=vLJMV795xlLqMnp75l2yUIeS/r3uZkAarjCmDPl44Cg%3D)
+
+### Declaration amount distribution
+
+The declaration amount is an important context attribute. Most cases involve small expenses: 75 % of declarations are below ≈ US$87, while the median is ≈ US$41.5. A small number of cases involve large amounts, up to ≈ US$3 292, which creates a long tail in the distribution.
+
+![case_amount_hist.png](https://files.oaiusercontent.com/file-4Qea89XnxCG8SWtJZSeGVx?se=2025-07-18T08%3A20%3A31Z&sp=r&sv=2024-08-04&sr=b&rscc=max-age%3D299%2C%20immutable%2C%20private&rscd=attachment%3B%20filename%3Dcase_amount_hist.png&sig=BtozlQuzFgoWf0lyzpZEKRGW4NBC0Pt4cwlBuTKisPk%3D)
+
+Temporal analysis
+-----------------
+
+To examine workload and adoption, the number of cases started per month was calculated. The line chart below shows that only about 120--200 cases were started each month in early 2017, but the volume increased steadily through 2018, peaking at nearly **900 new cases in June 2018**. A dip around August 2018 may reflect summer holidays or process changes, followed by another rise towards late 2018. The pattern suggests growing adoption of the system and seasonal fluctuations.
+
+![monthly_cases.png](https://files.oaiusercontent.com/file-2e8JuDHru78X7YbhAHHPmL?se=2025-07-18T08%3A20%3A31Z&sp=r&sv=2024-08-04&sr=b&rscc=max-age%3D299%2C%20immutable%2C%20private&rscd=attachment%3B%20filename%3Dmonthly_cases.png&sig=Dwxj7DlOambirtyaw7ACLiz8LY2y6t8fkQSoUy75Dn0%3D)
+
+Findings and recommendations
+----------------------------
+
+-   **High approval rate:** The process succeeds in most cases. Final payment handling occurs in about **95.6 %** of cases, indicating that the process effectively moves submissions to completion. The small proportion of rejections suggests that employees generally follow guidelines.
+
+-   **Rejection loops lengthen throughput time:** Cases ending in administrative rejections take the longest (mean ≈ 3 834 hours), which could indicate unresolved cases or data quality issues. A review of administrative rejection reasons could help identify opportunities to streamline the process or close dormant cases.
+
+-   **Waiting times dominate case duration:** The mean case duration (≈ 11.5 days) is significantly higher than the median (≈ 7.3 days), implying that a few cases experience long waiting times. Future analysis could calculate waiting and activity times separately and target bottlenecks.
+
+-   **Role distribution and undefined roles:** A large number of events (≈ 20 K) are executed by an `UNDEFINED` role, suggesting missing role assignments in the system. Ensuring that responsibilities are properly recorded will enable more reliable resource analysis.
+
+-   **Growth and seasonality:** The number of new cases increased substantially from 2017 to 2018, reflecting broader use of the system. Peaks and troughs correspond to seasonal patterns; aligning staffing levels with these patterns could improve throughput.
+
+-   **Monetary value versus workflow:** Since the vast majority of declarations involve small amounts, one could consider a simplified approval path for low‑value claims to reduce administrative overhead. The alternative path involving the budget owner should be reserved for higher amounts or exceptional cases.
+
+Conclusion
+----------
+
+The BPIC2020 domestic event log provides a rich view of the declaration and reimbursement process. Consistent with process‑mining guidelines, each event in the log includes a case identifier, activity name and timestamp[fluxicon.com](https://fluxicon.com/book/read/dataext/#:~:text=According%20to%20the%20mental%20model,process%20perspective%20on%20the%20data), allowing reconstruction of process flows. The analysis shows that most declarations proceed smoothly from submission through administrative and supervisor approvals to payment. A few alternative paths (budget‑owner approval) and rejection loops introduce variation and occasionally lengthen throughput time. By addressing data quality issues (undefined roles) and streamlining rework, the organisation can further improve efficiency and reduce case duration.
