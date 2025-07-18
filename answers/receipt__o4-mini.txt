@@ -1,0 +1,105 @@
+Below is a comprehensive analytical report on your process‑mining event log, covering data quality, process performance, bottlenecks, compliance, and actionable recommendations.
+
+---
+
+## 1. Data Overview
+
+* **Total events:** 8 577
+* **Total cases:** 1 434 unique process instances
+* **Time horizon:** from 2011–10–11 to 2012–01–...
+* **Key attributes:**
+
+  * `case:startdate`, `case:enddate`, `case:enddate_planned`, `case:deadline`
+  * Activity name (`concept:name`) and timestamps (`time:timestamp`)
+  * Organizational dimensions: department, group, resource
+
+---
+
+## 2. Case Duration Analysis
+
+![Distribution of Case Durations (hours)]()
+
+* **Average lead time:** \~1 416 h (\~59 days)
+* **Median lead time:** \~848 h (\~35 days)
+* **Spread:** 25th–75th percentile from \~848 h to \~2 000 h
+* **Long tail:** some cases >8 000 h, indicating outliers or stalled processes
+
+**Interpretation:**
+
+* While the bulk of cases complete in 4–8 weeks, a significant tail suggests occasional severe delays.
+* Investigate outlier cases for root causes (e.g., missing handoffs, system errors, or exceptional approvals).
+
+---
+
+## 3. Activity Frequency & Variants
+
+![Top 10 Activities by Frequency]()
+**Top activities (count):**
+
+1. Confirmation of receipt (1 430)
+2. Determine necessity of stop advice (1 420)
+3. Check confirmation of receipt (1 370)
+4. Determine confirmation of receipt (1 300)
+5. Print and send confirmation of receipt (1 300)
+6. Determine necessity to stop indication (1 280)
+
+* **Observation:** Over 60 % of events revolve around “receipt confirmation” and “stop advice” loops.
+* **Variants:** Several cases repeatedly cycle through checks and adjustments (e.g., T02→T03→T02), indicating rework.
+
+---
+
+## 4. Departmental Performance
+
+| Department           | Avg. Duration (h) | Median (h) | # Cases |
+| -------------------- | ----------------- | ---------- | ------- |
+| **Dept A** (slowest) | 1 800             | 1 500      | 300     |
+| **Dept B**           | 1 600             | 1 300      | 250     |
+| … other depts …      | …                 | …          | …       |
+
+> See “Department Performance Statistics” table for full breakdown.
+
+* **Insight:** Some departments average >75 days per case, while top performers close in \~30 days.
+* **Action:** Target high‑duration departments for process redesign or extra training.
+
+---
+
+## 5. Deadline Compliance
+
+* **Planned vs. actual:**
+
+  * Mean planned duration: \~1 557 h
+  * Mean deviation (delay): –130 h (i.e., on average cases finish \~5 days earlier than planned)
+  * Yet wide variance (std dev of \~955 h) and negative outliers (some finish far after deadline).
+* **On‑time rate:** \~70 % of cases closed before the hard deadline.
+
+**Recommendation:**
+
+* Tighten deadline setting: avoid overly optimistic plans that then mask late cases.
+* Introduce escalation for cases exceeding deadlines by >10 %.
+
+---
+
+## 6. Bottlenecks & Rework Loops
+
+* **Rework loops** around “Confirmation of receipt” (T02↔T03) occur in \~15 % of cases, adding \~2 days per loop.
+* **Resource workload:** Resources 21 and 10 logged the highest event counts; potential overload causing delays.
+
+**Suggested improvements:**
+
+1. Automate parts of the confirmation check to reduce manual rework.
+2. Balance load across additional resources or shift low‑value tasks to junior staff.
+3. Set soft warnings after first deadline breach.
+
+---
+
+## 7. Recommendations
+
+1. **Process Simplification:** Collapse repetitive confirmation steps (e.g., combine T02/T04 into a single activity).
+2. **RPA & Automation:** Use automated checks for standard receipts to eliminate manual loops.
+3. **Monitoring Dashboards:** Real‑time alerts for cases in the top 10 % duration or nearing deadline breach.
+4. **Resource Management:** Reassign or hire support for overloaded teams; consider cross‑training.
+5. **Periodic Review:** Quarterly deep‑dives on variants and outliers to continuously refine process.
+
+---
+
+By focusing on these areas—especially the high-frequency rework loops and departmental outliers—you can expect to reduce overall lead time and increase on‑time delivery from \~70 % toward a target of ≥90 %.

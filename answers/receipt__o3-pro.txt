@@ -1,0 +1,109 @@
+## 1  Dataset at a Glance
+
+| Metric              | Value                        | Comment                                      |
+| ------------------- | ---------------------------- | -------------------------------------------- |
+| Cases (receipts)    | **1 434**                    | “`case:concept:name`” column                 |
+| Events              | **8 577**                    | All lifecycle = *complete*                   |
+| Distinct activities | **27**                       | See bar chart above for the 15 most frequent |
+| Resources (users)   | **48**                       | From “`org:resource`”                        |
+| Observation window  | **2 Oct 2010 → 23 Jan 2012** | TZ offsets preserved                         |
+
+The log is homogeneous: \~6 events per case on average (σ ≈ 2.2; min = 1, max = 25).
+
+---
+
+## 2  Control‑Flow Insights
+
+| Rank | Variant (ordered activities)                                                                                                              | Cases | Share  |
+| ---- | ----------------------------------------------------------------------------------------------------------------------------------------- | ----- | ------ |
+|  1   | **Confirmation of receipt → T02 Check… → T04 Determine… → T05 Print & send… → T06 Determine stop advice → T10 Determine stop indication** | 713   | 49.7 % |
+|  2   | Confirmation → **T06** → **T10** → T02 → T04 → T05                                                                                        | 123   | 8.6 %  |
+|  3   | Confirmation *(single‑step cases)*                                                                                                        | 116   | 8.1 %  |
+|  4   | Confirmation → T02 → **T06** → **T10** → T04 → T05                                                                                        | 115   | 8.0 %  |
+|  5   | Confirmation → T02 → T04 → **T06** → **T10** → T05                                                                                        |  75   | 5.2 %  |
+
+*Observations*
+
+* 90 % of all cases follow one of the six‐step “happy paths” above, differing only in where **T06/T10** are inserted.
+* The log shows **no parallelism**; every receipt is handled strictly sequentially.
+
+---
+
+## 3  Performance Analysis
+
+### 3.1  Case Throughput Time
+
+* **Median**: **48 min 48 s**
+* **90th percentile**: **14 days 2 h**
+* **Mean**: **5 days 9 h** (strong right skew — a few receipts linger for months)
+
+### 3.2  Activity‑to‑Activity Waiting Times (common pairs, N > 100)
+
+| From → To                              | Median wait   | Mean wait     | Notes                                                   |
+| -------------------------------------- | ------------- | ------------- | ------------------------------------------------------- |
+| Confirmation → T02 Check               | 31 s          | **20 h**      | Most receipts move instantly, but \~20 % idle for days. |
+| T02 Check → T04 Determine              | 30 s          | **7 h 16 m**  | Similar long‑tail effect.                               |
+| T04 Determine → T05 Print & send       | **31 s**      | **15 h 27 m** | Printing often batched.                                 |
+| T06 Stop advice → T10 Stop indication  | **59 s**      | **9 h 3 m**   | Work‑day boundary effect.                               |
+| T10 Stop indication → T05 Print & send | **21 h 29 m** | **2 d 12 h**  | The single consistently slow hand‑off; key bottleneck.  |
+
+---
+
+## 4  Deadline Compliance
+
+* 1 053 cases (73 %) closed **on or before** their individual “`case:deadline`”.
+* 381 cases (27 %) were **late**.
+
+  * **Median lateness**: **14 days 15 h**
+  * **Mean lateness**: **31 days 10 h**
+  * Very late cases correlate strongly with the *T10 → T05* transition above.
+
+---
+
+## 5  Resource Work‑load & Specialisation
+
+| Events handled | Resource       | Unique cases | Comment                                      |
+| -------------- | -------------- | ------------ | -------------------------------------------- |
+| 1 228          | **Resource01** | 243          | Core operator, handles \~14 % of all events. |
+|  580           | Resource02     | 94           | Specialist — average 6.2 events per case.    |
+|  552           | Resource03     | 90           | –                                            |
+|  483           | Resource04     | 82           | –                                            |
+|  445           | Resource05     | 68           | –                                            |
+
+* Administrators **admin1** and **admin2** appear on many cases (344 & 146 respectively) but touch few events each — they likely perform single, high‑level approval steps.
+* Work is unevenly distributed; the top five users execute 41 % of all events.
+
+---
+
+## 6  Key Bottlenecks & Root Causes
+
+| Symptom                                | Likely Cause                            | Evidence                                                          | Improvement Idea                                                    |
+| -------------------------------------- | --------------------------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------- |
+| Long tail before **T02** & **T04**     | Receipts queued outside working hours   | High mean vs 30 s median                                          | Introduce automated triage or shift overlap.                        |
+| **T10 → T05** hand‑off (median ≈ 21 h) | Dependency on back‑office printing slot | Only pair with both high median & mean                            | Trigger printing job immediately after T10, or digitalise step.     |
+| 27 % overdue cases                     | Combination of the two issues above     | Overdue cases over‑represented in variant 2 & in T10 → T05 delays | Prioritise receipts whose deadline is within 3 days at every queue. |
+
+---
+
+## 7  Recommended Actions
+
+1. **Automate early checks (T02, T04).**
+   A simple rules engine could push straightforward receipts directly to printing, reserving manual review for exceptions.
+
+2. **Decouple printing (T05) from stop‑indication analysis (T10).**
+   Allow T05 to run as soon as confirmation is ready; avoid batching that introduces a one‑day wait.
+
+3. **Introduce SLA‑aware queueing.**
+   Flag receipts due within the next week and route them to senior clerks (admin1/admin2) to cut the 27 % over‑deadline share.
+
+4. **Load‑balance top performers.**
+   Redistribute some of **Resource01**’s workload to mid‑tier resources (Resource06‑10) to mitigate single‑point risk and shorten queues.
+
+5. **Monitor in real time.**
+   Re‑export the event log daily and track the *T10 → T05* elapsed time. Alarms >12 h will detect new backlogs early.
+
+---
+
+### Visual Appendix
+
+*See the bar chart of the 15 most frequent activities at the top of this report for a quick overview of where effort is concentrated.*

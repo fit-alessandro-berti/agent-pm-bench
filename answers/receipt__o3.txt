@@ -1,0 +1,95 @@
+### 1  Log at a glance
+
+| Metric                    | Value                                          |
+| ------------------------- | ---------------------------------------------- |
+|  Period covered           | 2 October 2010 → 23 January 2012 (≈ 16 months) |
+|  Events                   | **8 577**                                      |
+|  Cases                    | **1 434**                                      |
+|  Distinct activities      | **27**                                         |
+|  Distinct human resources | **48**                                         |
+
+<details><summary>ℹ️  Quick interpretation</summary>
+
+* A relatively small but rich log: \~6 events per case on average, with a long right‑tail in throughput times.
+* Work is heavily front‑loaded on a handful of activities and a handful of people (see the two bar charts above).
+
+</details>
+
+---
+
+### 2  Flow perspective
+
+| Rank | Typical path variant (activities in order)                                                           | #Cases  | Coverage   |
+| ---- | ---------------------------------------------------------------------------------------------------- | ------- | ---------- |
+|  1   | Confirmation → T02 Check → T04 Determine → T06 Determine stop advice → T10 Determine stop indication | **713** | **49.7 %** |
+|  2   | Confirmation → T06 Determine stop advice → T04 Determine → T05 Print & send                          | 123     | 8.6 %      |
+|  3   | Confirmation *(only)*                                                                                | 116     | 8.1 %      |
+|  4   | Confirmation → T02 Check → T06 Determine stop advice → T05 Print & send                              | 115     | 8.0 %      |
+|  5   | Confirmation → T02 Check → T04 Determine → T10 Determine stop indication → T05 Print & send          | 75      | 5.2 %      |
+
+*Just five variants explain **≈ 80 %** of all cases—good news for standardisation efforts.*
+
+---
+
+### 3  Performance perspective
+
+| Statistic         | Throughput time |
+| ----------------- | --------------- |
+|  Median case      | **48 min**      |
+|  Mean case        | **5 d 09 h**    |
+|  95 th percentile | **23 d 22 h**   |
+|  Max              | **276 d**       |
+
+The histogram above confirms a **highly skewed** distribution: most requests close in the same day, but a minority stay open for weeks or even months.
+
+#### Waiting‑time hotspots
+
+(Frequent direct‑follow pairs, average delay > 3 days)
+
+| From → To                                             | Avg. waiting time | #Occurrences | Comment                                        |
+| ----------------------------------------------------- | ----------------- | ------------ | ---------------------------------------------- |
+|  T02 Check confirmation → **T03 Adjust confirmation** | **5 d – 0 h**     | 43           | Re‑work is slow & sporadic.                    |
+|  T10 Determine stop indication → **T11 Create doc X** | **4 d 03 h**      | 34           | Handover to documentation.                     |
+|  T05 Print & send → **T06 Determine stop advice**     | **3 d 01 h**      | 791          | Feedback loop after printing—it happens often. |
+
+---
+
+### 4  Organisation perspective
+
+* **Resource 01** alone completes **14 %** of all events (see right‑hand bar chart), more than double the next busiest worker.
+* Group‑level data show a similar imbalance, suggesting a single team is the operational bottleneck.
+
+---
+
+### 5  Diagnosis & recommendations
+
+1. **Reduce feedback loops after printing (T05 → T06).**
+   *791 cases revisit “necessity of stop advice” after a letter is already printed.*
+   – Review decision criteria up‑front or introduce an approval gate **before** printing.
+
+2. **Accelerate “Adjust confirmation” work.**
+   *Low volume but extreme delays imply low priority or unclear ownership.*
+   – Define strict SLAs (e.g. 24 h) and route tasks automatically to an “on‑call” role when overdue.
+
+3. **Balance workload across resources.**
+   – Cross‑train staff so that the top 3 people are interchangeable on the six most common tasks.
+   – Introduce a work‑allocation rule that caps a single person at \~10 % of daily open tasks.
+
+4. **Handle exceptional cases separately.**
+   *The longest‑running 5 % of cases inflate average lead‑time by a factor of ten.*
+   – Introduce an “escalation” path (specialist team, periodic review) after, say, 14 days.
+
+5. **Automate hand‑offs involving document X creation.**
+   – Template‑driven generation and digital signatures could remove days of idle time.
+
+---
+
+### 6  Next steps
+
+* **Conformance checking** against the intended reference model to quantify re‑work and skipped steps.
+* **Root‑cause mining** (decision rules, clustering) on the very long cases.
+* **Simulation** of the proposed improvements to estimate throughput and workload changes before rollout.
+
+---
+
+*In case you need the underlying numbers or further visualisations (e.g. dotted heat‑maps, process maps, or weekly workload trends), just let me know and I’ll add them.*
