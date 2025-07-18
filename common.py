@@ -60,13 +60,3 @@ def clear_nonempty_files(directories):
 
 
 clear_nonempty_files(["answers", "evaluations"])
-
-if __name__ == "__main__":
-    # Example usage: provide the full path where the answer should be saved
-    target = "answers/ccc19__o3.txt"
-    t = PerformPromptThread(target, "ciao", "o3")
-    t.start()
-    t2 = PerformPromptThread(target+"2", "ciao2", "o3")
-    t2.start()
-    t.join()
-    t2.join()
