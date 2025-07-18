@@ -1,0 +1,102 @@
+Below is a structured analytical report on your BPIC 2020 domestic event log, covering key statistics, control‑flow insights, performance metrics and activity analyses.
+
+---
+
+## 1. Log Overview
+
+* **Total events**: 56 437
+* **Distinct cases**: 10 500
+* **Unique activities**: 17
+
+This is a medium‑sized log, suitable for both descriptive and diagnostic analyses.
+
+---
+
+## 2. Case Statistics
+
+| Metric                    | Value |
+| ------------------------- | ----- |
+| Avg. # of events per case | 5.37  |
+| Median # of events/case   | 5     |
+| Min # of events/case      | 1     |
+| Max # of events/case      | 24    |
+
+Most cases involve 5–6 events; only a handful deviate significantly.
+
+---
+
+## 3. Trace Variants
+
+We reconstructed the sequence of activities per case and counted variant frequencies. The **top 3** variants (by case count) are:
+
+| Rank | Sequence (activities)                                                                        | Count |
+| ---- | -------------------------------------------------------------------------------------------- | ----- |
+| 1    | SUBMITTED → APPROVED by ADMINISTRATION → FINAL\_APPROVED → Request Payment → Payment Handled | 4 618 |
+| 2    | SUBMITTED → APPROVED by ADMINISTRATION → Request Payment → Payment Handled                   | 2 473 |
+| 3    | SUBMITTED → FINAL\_APPROVED → Request Payment → Payment Handled                              | 1 392 |
+
+Together, these three account for nearly 80 % of all cases—indicating a largely standardized process flow with a few alternative paths (e.g. cases with pre‑approval or rejections).
+
+---
+
+## 4. Performance Analysis
+
+* **Average case duration**: 11.5 days
+* **Median case duration**: 7.3 days
+* **25th percentile**: 5.8 days
+* **75th percentile**: 12.2 days
+* **Max duration**: 450+ days (outliers)
+
+The histogram of case durations (Figure 1) shows a right‑skew: most cases complete within 30 days, but a small number linger far longer.
+
+ **Figure 1**: Distribution of Case Durations
+
+---
+
+## 5. Activity Analysis
+
+The bar chart of the top 10 activities (Figure 2) reveals:
+
+1. **Declaration SUBMITTED by EMPLOYEE** (11 531 events)
+2. **Declaration FINAL\_APPROVED by SUPERVISOR** (10 131)
+3. **Payment Handled** (10 044)
+4. **Request Payment** (10 040)
+5. **Declaration APPROVED by ADMINISTRATION** (8 202)
+
+Other activities (e.g., Budget Owner approvals, rejections) occur much less frequently.
+
+ **Figure 2**: Top 10 Most Frequent Activities
+
+---
+
+## 6. Key Insights & Recommendations
+
+1. **Standardization vs. Variants**
+
+   * The process is highly standardized; the top 3 variants comprise \~80 % of cases.
+   * Investigate the remaining <20 % of variants for potential process improvements or automation opportunities.
+
+2. **Bottlenecks & Delays**
+
+   * Median throughput of \~7 days is reasonable, but the mean of \~11.5 days indicates some slow cases.
+   * Drill down on outlier cases (e.g. >30 days) to identify root causes—perhaps manual intervention or missing approvals.
+
+3. **Resource Utilization**
+
+   * High volume of submissions and approvals by employees/supervisors suggests these roles are critical.
+   * Consider workload balancing or additional training to reduce delays in these steps.
+
+4. **Exception Handling**
+
+   * Rare activities like “DECLARATION REJECTED by ADMINISTRATION” signal exceptions.
+   * Audit these cases to ensure rejections are handled swiftly and prevent back‑and‑forth loops.
+
+---
+
+### Next Steps
+
+* **Drill‑down analysis** on high‑duration cases and exception paths.
+* **Conformance checking** against a normative process model to quantify deviations.
+* **Predictive analytics** to forecast case duration or identify at‑risk cases early.
+
+This report provides the foundation for deeper process‑mining investigations and targeted process‑improvement initiatives. Let me know if you’d like to explore any specific area in more detail!

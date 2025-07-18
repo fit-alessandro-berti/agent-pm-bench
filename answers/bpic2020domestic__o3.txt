@@ -1,0 +1,123 @@
+Below is a structured report synthesising the key insights drawn from the **BPIC 2020 – Domestic Declarations** event log you supplied.
+Interactive tables (top‑activities & variants) and a duration‑distribution chart appear just above in the conversation for closer inspection.
+
+---
+
+## 1  Dataset overview
+
+| Metric                   | Value                    |
+| ------------------------ | ------------------------ |
+| **Events**               | 56 437                   |
+| **Cases (declarations)** | 10 500                   |
+| **Distinct activities**  | 17                       |
+| **Log period**           | 9 Jan 2017 – 27 Dec 2018 |
+| **Mean events / case**   | 5.37 (σ ≈ 1.49)          |
+| **Median events / case** | 5                        |
+
+*The process is moderately structured: most declarations complete in 4–6 steps, yet extreme paths of up to 24 events exist.*
+
+---
+
+## 2  Activity analysis
+
+**Top 5 activities by frequency**
+
+| Rank | Activity                                  | Events | Share |
+| ---- | ----------------------------------------- | ------ | ----- |
+|  1   | Declaration SUBMITTED by EMPLOYEE         | 11 531 | 20 %  |
+|  2   | Declaration FINAL\_APPROVED by SUPERVISOR | 10 131 | 18 %  |
+|  3   | Payment Handled                           | 10 044 | 18 %  |
+|  4   | Request Payment                           | 10 040 | 18 %  |
+|  5   | Declaration APPROVED by ADMINISTRATION    | 8 202  | 15 %  |
+
+*Observations*
+
+* The log is front‑loaded with “SUBMITTED” events, indicating little batching before logging.
+* All successful paths funnel through **FINAL\_APPROVED → Request Payment → Payment Handled**.
+* **SUBMITTED → APPROVED by ADMINISTRATION** is the most common first transition (8 202 times).
+
+---
+
+## 3  Variant analysis
+
+\*10 500 cases collapse into **1 137 unique variants** (path definitions).
+
+* The **top 3 variants** account for **about 80 %** of all cases, and each ends in payment:
+
+1. `SUBMITTED → APPROVED by ADMINISTRATION → FINAL_APPROVED → Request Payment → Payment Handled`  (4 618 cases)
+2. Same as #1 plus an **APPROVED by BUDGET OWNER** step (2 473 cases).
+3. `SUBMITTED → FINAL_APPROVED → Request Payment → Payment Handled` (1 392 cases).
+
+*The tails contain rejected or reworked declarations that sometimes loop back to employees.*
+
+---
+
+## 4  Performance (throughput‑time)
+
+| Statistic              | Hours       | Days    |
+| ---------------------- | ----------- | ------- |
+| **Mean case duration** |  ≈ 277 h    |  11.5 d |
+| **Median**             |  ≈ 176 h    |  7.3 d  |
+| **90th percentile**    |  ≈ 483 h    |  20.1 d |
+| **Max**                |  ≈ 11 262 h |  469 d  |
+
+*Distribution insight*
+
+* The histogram shows a right‑skew: a tight core cluster 3–10 days, but a long tail of ageing cases.
+* **0‑hour** durations (instantaneous pairs) exist but are rare—mostly automatic system hand‑offs.
+
+---
+
+## 5  Control‑flow (direct‑follows graph highlights)
+
+| From → To                                             | Frequency |
+| ----------------------------------------------------- | --------- |
+| FINAL\_APPROVED → Request Payment                     | 10 038    |
+| Request Payment → Payment Handled                     | 10 037    |
+| SUBMITTED → APPROVED by ADMINISTRATION                |  8 202    |
+| APPROVED by ADMINISTRATION → FINAL\_APPROVED          |  5 133    |
+| APPROVED by ADMINISTRATION → APPROVED by BUDGET OWNER |  2 820    |
+| APPROVED by BUDGET OWNER → FINAL\_APPROVED            |  2 788    |
+
+*Bottleneck candidates*
+
+* The hand‑off from **ADMINISTRATION → SUPERVISOR** appears in only \~50 % of the cases that pass administration, suggesting alternative “happy” and “fast‑track” routes.
+* Rejection loops (**REJECTED by SUPERVISOR → REJECTED by EMPLOYEE**) repeat 928 times, signalling potential re‑work waste.
+
+---
+
+## 6  Resource insights (high‑level)
+
+| Role           | Participation (events)                     |
+| -------------- | ------------------------------------------ |
+| EMPLOYEE       |  \~20 % (all submissions, some rejections) |
+| SUPERVISOR     |  \~18 % (final approvals & rejections)     |
+| ADMINISTRATION |  \~15 %                                    |
+| BUDGET OWNER   |  \~5 %                                     |
+| SYSTEM         |  \~18 % (all payments & requests)          |
+
+*Automation is already leveraged in payment handling; earlier approvals show manual concentration.*
+
+---
+
+## 7  Key findings & recommendations
+
+1. **Lead‑time gap** – 80 % of declarations resolve within 3–10 days, yet 10 % linger > 20 days and a few extreme outliers run > 1 year.
+   *Action*: introduce SLA alerts after 10 days; run root‑cause on outliers (often pending budget owner or supervisor).
+2. **Variant sprawl** – 1 137 variants, but only a handful dominant paths.
+   *Action*: harmonise exception handling forms; consider rule‑based auto‑approval when amount < €x.
+3. **Rework loops** – Rejection loops between supervisors and employees occur nearly a thousand times.
+   *Action*: deploy pre‑submission validation or collaborative editing to minimise quality defects.
+4. **Manual approval bottlenecks** – ADMINISTRATION and SUPERVISOR steps drive longest wait times.
+   *Action*: pilot automation or parallelisation (e.g. parallel budget owner check).
+5. **Instantaneous system steps** – System‑handled payment reduces overall duration; further automation upstream could yield similar gains.
+
+---
+
+### Next steps (if deeper mining is desired)
+
+* **Conformance checking** against the designed declaration policy to quantify deviations.
+* **Performance overlay** on a discovered BPMN model for visual bottleneck mapping.
+* **Resource hand‑over analysis** to validate segregation‑of‑duties compliance.
+
+Feel free to let me know if you’d like drill‑downs, alternative visualisations, or follow‑up modelling!
