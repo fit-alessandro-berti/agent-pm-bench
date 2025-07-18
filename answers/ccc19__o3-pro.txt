@@ -1,0 +1,119 @@
+Below is a structured report that walks through the key results obtained from your uploaded event log.
+Interactive plots and printed tables appear above for reference.
+
+---
+
+## 1  Log‐level overview
+
+| Metric                       | Value                  |
+| ---------------------------- | ---------------------- |
+| **Events**                   |  1 394                 |
+| **Cases (traces)**           |  20                    |
+| **Distinct activities**      |  29                    |
+| **Distinct resources**       |  10                    |
+| **Earliest timestamp**       |  11 Oct 2018 12:00 UTC |
+| **Latest timestamp**         |  20 Jan 2019 14:25 UTC |
+| **Total observation window** |  ≈ 101 days            |
+
+**Interpretation** – The log is compact (20 traces) but covers a three‑month period, suggesting each case represents a lengthy clinical procedure that is performed infrequently.
+
+---
+
+## 2  Performance perspective
+
+### 2.1  End‑to‑end case duration
+
+* Median trace duration ≈ 21.5 minutes (see histogram).
+* One extreme outlier lasts **24 h 15 min**, inflating the mean to 1 h 44 min.
+
+  * *Recommendation:* Inspect that single trace; long idle gaps between “Position probe” and the next step (Section 2.3) hint at an unplanned interruption.
+
+### 2.2  Activity waiting times
+
+Top‑10 activities with the longest **average** waiting time *before* the next step:
+
+| Activity            | Avg. wait (min) |
+| ------------------- | --------------- |
+| Position probe      | **58**          |
+| Clean puncture area |  3.8            |
+| Widen pathway       |  3.4            |
+| Drop probe          |  2.3            |
+| Prepare implements  |  1.9            |
+
+* “**Position probe**” is a clear bottleneck: it is followed by a median delay of almost an hour, dwarfing all other steps.
+* *Operational insight:* This is likely when imaging results are reviewed or senior staff are called. Adding an extra ultrasound probe team or pre‑allocating expertise could slash total procedure time.
+
+### 2.3  Stage workload
+
+Events per high‑level stage:
+
+| Stage                   | Events |
+| ----------------------- | ------ |
+| Install Guidewire       |  348   |
+| Operator & Patient Prep |  322   |
+| Ultrasound Prep         |  238   |
+| Install Catheter        |  216   |
+| Venous Puncture         |  156   |
+| Locate Structures       |  114   |
+
+* Guidewire installation dominates effort (25 % of events).
+* If cycle‑time reduction is the goal, focus on the **Install Guidewire** and **Operator & Patient Preparation** stages first.
+
+---
+
+## 3  Control‑flow perspective
+
+* Each of the 20 cases has a **unique variant** label (“Variant 1” … “Variant 20”) but the discovered start‑event sequences confirm there is practically **no repetition**: every trace is different.
+
+  * *Interpretation:* Either the procedure is highly customized per patient or the log retains minute implementation details (noise).
+  * *Recommendation:* Apply activity abstraction or stage‑level aggregation before conformance checking; otherwise the model will be over‑fitted.
+
+* The canonical path begins with **Hand washing → Ultrasound configuration → Anatomic identification** and ends with **Check catheter position** in most traces.
+
+---
+
+## 4  Organisational perspective
+
+Top‑5 resources by workload:
+
+| Resource | Events |
+| -------- | ------ |
+| R 21 1F  |  180   |
+| R 31 1G  |  154   |
+| R 32 1H  |  154   |
+| R 48 2D  |  150   |
+| R 45 2A  |  138   |
+
+* Work is fairly balanced (four resources handle \~11 % each).
+* However, just after the **Position probe** step, resource R 21 1F appears in 65 % of affected traces; cross‑training others may reduce dependency on this individual.
+
+---
+
+## 5  Data quality observations
+
+1. **Duplicate attribute names** – Both `ACTIVITY` and `concept:name` exist; the former was used for analysis.
+2. **Start/complete pairs:** Lifecycle information is intact, enabling more detailed service‑time analysis if required.
+3. **Case identifier** – `case:concept:name` includes video IDs; make sure this truly identifies a unique patient encounter (consult domain expert).
+
+---
+
+## 6  Actionable recommendations
+
+| Area                 | Recommendation                                                                      | Expected impact                                                     |
+| -------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| Bottleneck removal   | Add imaging support or parallelize tasks around **“Position probe.”**               | Cut average trace duration by ≥ 50 min; improve schedule adherence. |
+| Standardisation      | Cluster traces at stage level, design a “happy path,” and create compliance checks. | Lower variability; easier root‑cause analysis for deviations.       |
+| Resource flexibility | Cross‑train staff currently represented by R 21 1F.                                 | Reduces single‑point reliance; smoother throughput in off‑hours.    |
+| Data improvement     | Consolidate synonymous activity labels and ensure consistent timestamp granularity. | Cleaner logs; more robust KPI tracking.                             |
+
+---
+
+### Next steps (if deeper insight is needed)
+
+1. **Throughput heat‑map** – overlay resource utilisation with clock time to detect peak congestion.
+2. **Conformance checking** – once noise is filtered, compare traces against a BPMN model to quantify deviation cost.
+3. **Predictive monitoring** – train a model to flag cases that exceed 30 min at “Position probe,” enabling proactive escalation.
+
+---
+
+Feel free to ask if you’d like any drill‑down, alternative visualisations, or a cleaned XES version of the log for import into specialised mining tools.

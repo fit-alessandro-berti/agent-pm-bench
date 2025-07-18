@@ -59,4 +59,4 @@ def clear_nonempty_files(directories):
                 os.remove(path)
 
 
-#clear_nonempty_files(["answers", "evaluations"])
+#clear_nonempty_files(["answers", "evaluations_o3"])

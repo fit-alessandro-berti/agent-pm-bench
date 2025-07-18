@@ -1,0 +1,75 @@
+Below is a structured interpretation of the interactive tables and charts that just appeared. Feel free to explore them directly—my commentary here stitches the numbers into a coherent story and highlights improvement opportunities.
+
+---
+
+## 1  Event‑log overview
+
+* **20 cases, 1 394 events, 29 distinct activities and 10 resources** were recorded between **11 Oct 2018 12:00 UTC** and **20 Jan 2019 14:25 UTC** (see *Log overview* table).
+* Case throughput times range from **11 min** to **24 h 15 min**.
+
+  * The *histogram* shows a tight cluster below one hour and a single extreme outlier that pushes the mean up to \~104 min.
+  * Median of **21.5 min** is therefore a more realistic “typical” duration.
+
+### What this means
+
+Most insertions run quickly and consistently; one very long case skews averages and deserves a root‑cause check (e.g., equipment failure, patient complication, documentation backlog).
+
+---
+
+## 2  Control‑flow analysis
+
+| Insight                                                                                                                                                                                                                                                                 | Evidence                              |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
+| **High‑frequency tasks** – *Prepare implements*, *Get in sterile clothes* and *Ultrasound configuration* top the bar‑chart and table. These form the backbone of every variant.                                                                                         | *Top 15 activities* table / bar‑chart |
+| **Fastest vs. slowest activities** – Median service times are tightly bounded (≤3 min) for almost every high‑volume step. Preparation steps (*Get in sterile clothes*, *Advance catheter*) average 1–1.3 min, whereas checks (*Puncture* max 5 min) occasionally spike. | *Top 10 activities (duration)* table  |
+| **Typical hand‑offs** – The *Top 20 direct‑follow transitions* table shows that ›Puncture → Blood return‹ and ›Hand washing → Get in sterile clothes‹ dominate. These repeat consistently across cases, signalling a well‑defined protocol.                             | *Transition* table                    |
+| **Potential re‑work loop** – The pair ›Hand washing ↔ Get in sterile clothes‹ appears in both forward and reverse direction. That suggests at least some operators redo preparation—possibly after contamination.                                                       | Same table                            |
+
+---
+
+## 3  Stage‑level view
+
+The *Stage distribution* bar‑chart highlights:
+
+| Stage                   | % of completed events | Comment                                            |
+| ----------------------- | --------------------- | -------------------------------------------------- |
+| Install Guidewire       | **24 %**              | Largest slice—critical focus area                  |
+| Operator & Patient Prep | 22 %                  | Includes two separate hand‑washing steps           |
+| Ultrasound Prep         | 16 %                  | Potential to parallelise with operator prep        |
+| Install Catheter        | 15 %                  | Follows guidewire; times mirror catheter successes |
+| Venous Puncture         | 11 %                  | Short but risk‑laden step                          |
+| Locate Structures       | 8 %                   | Typically very quick (few seconds)                 |
+
+Balancing resource allocation between Install Guidewire and Operator Prep stages will yield the biggest throughput gains.
+
+---
+
+## 4  Resource utilisation
+
+*Top 10 resources* table shows a fairly even spread (53 – 90 events each). No single operator is overloaded, indicating good workforce distribution.
+*Pre* vs *Post* round split is also balanced at 370 vs 327 events—supporting that both data‑collection phases were similar in scale.
+
+---
+
+## 5  Performance & bottlenecks
+
+| Finding                                                                        | Recommendation                                                                             |
+| ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ |
+| **Single extreme case** inflated average duration from 22 → 104 min.           | Audit the outlier trace: was it an overnight wait, equipment downtime, or logging error?   |
+| **Hand‑washing re‑work** implies sterile breaks.                               | Reinforce aseptic technique or adjust workspace layout to minimise contamination risk.     |
+| **Preparation cluster** dominates early flow; yet prep steps are already fast. | Focus improvements on the *transition* between prep and puncture—look for idle gaps there. |
+| **Guidewire installation** is the longest stage and the top transition hub.    | Standardise guidewire kits & training; consider a checklist step to reduce retries.        |
+
+---
+
+## 6  Next steps for deeper mining
+
+1. **Conformance check** – compare each case against the standard protocol BPMN to quantify deviations.
+2. **Attribute analytics** – split durations by *operator ID, patient cohort,* or *round* to reveal hidden drivers.
+3. **Simulation / “what‑if” scenarios** – test workload changes (e.g., doubling catheter cases) on current resource roster.
+
+---
+
+### TL;DR
+
+The procedure is generally quick and consistent, but one outlier and evidence of occasional sterile‑prep re‑work highlight improvement opportunities. Tightening preparatory hygiene, investigating the outlier case, and streamlining guidewire installation offer the highest ROI for lead‑time reduction.
