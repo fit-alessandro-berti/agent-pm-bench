@@ -12,45 +12,61 @@ class PerformPromptThread(threading.Thread):
     """
     _input_lock = threading.Lock()
 
-    def __init__(self, file_path, prompt, model):
+    def __init__(self, target_path, prompt, model):
         super().__init__()
-        self.file_path = file_path
+        self.target_path = target_path
         self.prompt = prompt
         self.model = model
 
     def run(self):
         # Acquire the lock immediately at the start of the thread
         PerformPromptThread._input_lock.acquire()
-        try:
-            # Determine the answer file name
-            base = os.path.basename(self.file_path)
-            name, _ = os.path.splitext(base)
-            answer_filename = f"{name}__{self.model}.txt"
-            answer_path = os.path.join("answers", answer_filename)
 
-            # Make sure the answers directory exists
-            os.makedirs(os.path.dirname(answer_path), exist_ok=True)
+        # Ensure the target directory exists
+        os.makedirs(os.path.dirname(self.target_path), exist_ok=True)
 
-            # If the file doesn't exist or is empty, create it and prompt
-            if not os.path.exists(answer_path) or os.path.getsize(answer_path) == 0:
-                # Create an empty file
-                with open(answer_path, "w"):
-                    pass
+        # If the file doesn't exist or is empty, create it and prompt
+        if not os.path.exists(self.target_path) or os.path.getsize(self.target_path) == 0:
+            # Copy the prompt to the clipboard
+            pyperclip.copy(self.prompt)
 
-                # Copy the prompt to the clipboard
-                pyperclip.copy(self.prompt)
+            # Wait for user to press Enter
+            print(self.target_path, self.model)
+            input("press ENTER to continue ->")
 
-                # Wait for user to press Enter
-                input("-> ")
-        finally:
             # Release the lock immediately after input()
             PerformPromptThread._input_lock.release()
 
-        # Open the answer file in Notepad (outside the lock)
-        subprocess.run(["notepad.exe", answer_path])
+            # Open the target file in Notepad (outside the lock)
+            subprocess.run(
+                f'start "" notepad.exe "{self.target_path}"',
+                shell=True
+            )
 
+
+def clear_nonempty_files(directories):
+    """
+    Remove every file in each of the given directories if its size is 0 bytes.
+    """
+    for d in directories:
+        # make sure the directory actually exists
+        if not os.path.isdir(d):
+            continue
+        for fname in os.listdir(d):
+            path = os.path.join(d, fname)
+            # only consider regular files
+            if os.path.isfile(path) and os.path.getsize(path) == 0:
+                os.remove(path)
+
+
+clear_nonempty_files(["answers", "evaluations"])
 
 if __name__ == "__main__":
-    t = PerformPromptThread("data/ccc19.csv", "ciao", "o3")
+    # Example usage: provide the full path where the answer should be saved
+    target = "answers/ccc19__o3.txt"
+    t = PerformPromptThread(target, "ciao", "o3")
     t.start()
+    t2 = PerformPromptThread(target+"2", "ciao2", "o3")
+    t2.start()
     t.join()
+    t2.join()
