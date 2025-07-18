@@ -4,16 +4,7 @@
 
 ## What is being measured?
 
-This benchmark evaluates **large‑language models (LLMs)** on their ability to act as **autonomous process‑mining analysts**.  Given only an event‑log CSV, the model must deliver a complete written report that would be useful to a business stakeholder.  We grade each answer on the four pillars listed below:
-
-| Pillar             | What we look for                                                                                                                         |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| *Correctness*      | Facts, figures, KPIs and process maps match the underlying log.                                                                          |
-| *Coverage*         | The report touches on all major process‑mining perspectives: control‑flow, performance, organisational, conformance and recommendations. |
-| *Depth of insight* | The analysis moves beyond surface‑level charts to root‑cause explanations and actionable suggestions.                                    |
-| *Presentation*     | Clarity, structure and proper business language that fits a consulting report.                                                           |
-
-Each pillar is implicitly captured when an LLM evaluator decides which of two reports is better (see **How we measure** below).
+This benchmark evaluates **large‑language models (LLMs)** on their ability to act as **autonomous process‑mining analysts**.  Given only an event‑log CSV, the model must deliver a complete written report that would be useful to a business stakeholder.
 
 ## How we measure it
 
