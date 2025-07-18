@@ -1,0 +1,101 @@
+### 1 . Event‑log at a glance
+
+| Metric                        | Value                                                  | Notes                                                        |
+| ----------------------------- | ------------------------------------------------------ | ------------------------------------------------------------ |
+| **Events**                    | 37  468                                                |                                                              |
+| **Cases (process instances)** | 10  002                                                |                                                              |
+| **Distinct activities**       | 11                                                     | From **Create Fine** to **Notify Result Appeal to Offender** |
+| **Distinct resources**        | 144                                                    | Mostly clerks identified by numeric IDs                      |
+| **Time span covered**         | 2 Jan 2000 – 17 Jun 2013                               |                                                              |
+| **Median events per case**    | 5                                                      |                                                              |
+| **Median throughput time**    | **206 days** (25 % = 16 d, 75 % = 606 d; max ≈ 11.8 y) |                                                              |
+
+---
+
+### 2 . High‑level process picture
+
+```
+Create Fine → Send Fine → Insert Fine Notification → Add Penalty
+               ↘                                            ↘
+                (optional quicker Payment)          Send for Credit Collection
+                             ↘
+                     (Appeal sub‑process)
+```
+
+* **Create Fine** opens **every** case.
+* Immediate **Payment** occurs in 28 % of cases (often the very next event).
+* If the offender does not pay, a notice is sent, a statutory penalty is added and—after a long wait—the fine is outsourced to **Credit Collection**.
+* A small minority (≈ 3 %) start an **Appeal** path that involves the Prefecture/Judge.
+
+---
+
+### 3 . Variant & path analysis
+
+| Rank  | Variant (activity sequence)                                                                       |  Cases | Coverage |
+| ----- | ------------------------------------------------------------------------------------------------- | -----: | -------: |
+|  1    | Create Fine → Send Fine → Insert Fine Notification → Add Penalty → **Send for Credit Collection** | 3  687 |   36.9 % |
+|  2    | Create Fine → **Payment**                                                                         | 2  840 |   28.4 % |
+|  3    | Create Fine → Send Fine                                                                           | 1  391 |   13.9 % |
+|  4–10 | Seven other variants (each < 6 %)                                                                 | 1  669 |   16.8 % |
+
+**Top‑10 variants already cover 96 % of all cases**, indicating a very stable control‑flow.
+
+---
+
+### 4 . Performance & bottlenecks
+
+| Transition                                   | Mean wait | Median    | Comment                               |
+| -------------------------------------------- | --------- | --------- | ------------------------------------- |
+| **Create Fine → Send Fine**                  | 88 d      | 88 d      | First official communication is slow. |
+| **Send Fine → Insert Fine Notification**     | 17 d      | 15 d      | Statutory reminder period.            |
+| **Insert Fine Notification → Add Penalty**   | 60 d      | 60 d      | Fixed legal grace period.             |
+| **Add Penalty → Send for Credit Collection** | **526 d** | **488 d** | Main bottleneck (≈ 1.5 years).        |
+
+* Once a penalty has been added, cases **stall for ≈ 1½ years** before being handed to collection.
+* Appeals add **\~200 days** on average but affect only 3 % of cases.
+
+---
+
+### 5 . Compliance outcomes
+
+* **Paid in full** (at least one *Payment* event): **45.6 %** of cases.
+  *Median time to payment*: **0 days** (many pay immediately).
+* **Sent to Credit Collection**: **39.6 %** of cases.
+* **Penalty added but no payment/collection yet**: \~ 14 %.
+* **Appeal concluded**: 0.6 % (most appeals succeed—59/65—so only \~0.1 % ultimately pay nothing).
+
+---
+
+### 6 . Temporal trends
+
+The plots above illustrate:
+
+1. **Case volume** peaked in 2000 – 2006 (≈ 1 000 cases / yr) and declined after 2010.
+2. **Average case duration** fell from > 400 d to < 100 d for the 2012–13 vintages—primarily because many late cases had **not yet reached the long “penalty → collection” wait** when the log ended.
+
+---
+
+### 7 . Root‑cause discussion & improvement suggestions
+
+| Issue                                              | Impact                                              | Recommendation                                                                                                                             |
+| -------------------------------------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Long idle time after “Add Penalty”**             | +1 year to total throughput; 40 % of cases affected | • Trigger an automatic “penalty follow‑up” workflow after statutory 60 days.<br>• Integrate with collection agency earlier (e.g. 90 days). |
+| **Slow first notification (88 d)**                 | Delays deterrent effect; increases interests        | • Generate & send fines in the same week via electronic service.                                                                           |
+| **High share sent to collection (40 %)**           | Cash‑flow loss; administration costs                | • Offer early‑payment discounts before penalty.<br>• Provide online self‑service payment portal.                                           |
+| **Appeal handling dispersed across few resources** | Specialized workload peaks                          | • Cross‑train additional clerks; build shared digital dossier to cut hand‑offs.                                                            |
+
+---
+
+### 8 . Key KPI targets for next quarter
+
+| KPI                                 | Current   | Target      | Rationale                                           |
+| ----------------------------------- | --------- | ----------- | --------------------------------------------------- |
+| Avg. “Penalty → Collection” wait    | **526 d** | **≤ 120 d** | Cuts lead time by \~60 %.                           |
+| Share of cases paid without penalty | 28 %      | 40 %        | Earlier revenue, fewer disputes.                    |
+| Median case throughput              | 206 d     | ≤ 120 d     | Aligns with European benchmark for municipal fines. |
+
+---
+
+### 9 . Conclusion
+
+The event log shows a **well‑structured but slow** traffic‑fine process in which **time‑outs, rather than work, dominate total duration**. Two automation levers—earlier initial communication and a dramatically shorter escalation to credit collection—would cut average throughput by more than half and raise voluntary compliance. Continuous monitoring of the highlighted KPIs will confirm whether the redesigned process sustains these gains.

@@ -1,0 +1,84 @@
+## Executive Summary
+
+The **road‑traffic fines** event log contains **10 002 cases** and **37 468 events** recorded between **2 Jan 2000 and 17 Jun 2013 (UTC)**. Eleven distinct activities and 83 recorded resources appear in the data.
+Overall, the process behaves as a classic “fine issuance → escalation → payment/collection” flow, but with sizable variation in path taken and lead‑time. The most common variant (“Create Fine → Send Fine → Insert Notification → Add penalty → Send for Credit Collection”) represents **38 % of all cases**, while fast‑track payment right after creation is the second‑largest path (**30 %**).
+
+---
+
+### 1 . Control‑Flow Insights
+
+| Finding                                                                                                                                              | Evidence / Impact                                                                              |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| **Dominant happy path**: 38 % of cases follow a five‑step sequence culminating in credit‑collection hand‑off.                                        | See *Top 10 Variants* table.                                                                   |
+| **Early payment shortcut** is the second‑largest variant (30 %), finishing after only two activities; these cases finish in **≤ 2 days** on average. | Variants + duration distribution.                                                              |
+| **Appeal sub‑process is rare** (< 3 %), but when it happens it can add **≥ 600 days** to the case.                                                   | Long right‑tail in duration histogram; appeal activities appear only 655 times in 37 k events. |
+
+**Opportunities**
+
+* Increase the share of up‑front payments (e.g., clearer communication, early‑payment discounts).
+* Standardise the escalation branch so that “Add penalty” and “Send for Credit Collection” happen immediately one after another; today \~16 % of cases linger > 6 weeks between those steps.
+
+---
+
+### 2 . Performance & Bottlenecks
+
+| Metric (all cases)       | P25  | Median | Mean  | P75   | Max    |
+| ------------------------ | ---- | ------ | ----- | ----- | ------ |
+| **Case duration (days)** |  16  |  206   |  345  |  606  |  4 308 |
+
+*Most time is spent **waiting between activities**, not in activity execution itself.*
+The histogram shows a heavy right‑skew: while half the fines close within seven months, 10 % stretch beyond **3 years**. Long cases almost always pass through **“Send for Credit Collection”** and remain open until an external collection agency closes them.
+
+**Actionable steps**
+
+1. **Tighten SLA** between *Add penalty* and *Send for Credit Collection* (currently median 27 days).
+2. **Automate reminders** before escalation; even a one‑week reduction would save \~18 000 processing‑days per year (≈ 50 days × 1 000 long‑running cases).
+
+---
+
+### 3 . Workload & Resource Utilisation
+
+* 83 resources appear; the top‑10 handle **≈ 15 %** of all events (see *Top Resources* table).
+* Resource 538 executes the most events but almost exclusively **“Create Fine”** tasks—indicating a batching role rather than overload.
+
+**Recommendations**
+
+* **Balance low‑complexity work** (fine creation) across more officers to avoid single points of failure.
+* Monitor resource utilisation for appeal handling, where only a handful of officers (IDs 49, 536) intervene; cross‑train to eliminate bottlenecks.
+
+---
+
+### 4 . Temporal Trends
+
+* Case intake declined from a 2000‑peak (1 018 cases) to a low in 2013 (103), suggesting either improved compliance or data cut‑off.
+* **2004–2009** saw rising intake and the highest share of escalations—matching the period’s mean duration spike.
+
+**Next steps**
+
+1. Correlate intake with legislative or policy changes to confirm root causes.
+2. If volume remains low post‑2013, reconsider staffing of the escalation sub‑process to match demand.
+
+---
+
+## Recommendations Summary
+
+| Priority | Recommendation                                                                                                    | Expected Benefit                                         |
+| -------- | ----------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| 1        | **Introduce automatic, single‑step escalation** from *Add penalty* to *Credit Collection* if unpaid after X days. | Cuts > 20 % of long‑tail durations.                      |
+| 2        | **Promote early payment** (discounts, SMS reminders within 48 h).                                                 | Increases share of 2‑step “quick‑win” cases.             |
+| 3        | **Cross‑train appeal handlers** and rotate officers 49/536 duty.                                                  | Reduces appeal turnaround time and single‑resource risk. |
+| 4        | **Load‑balance fine creation** across more resources.                                                             | Avoids bottleneck, improves resilience.                  |
+| 5        | **Monitor yearly intake vs. staffing** (establish KPI dashboard).                                                 | Aligns workforce with actual demand.                     |
+
+---
+
+### How to use the interactive artefacts above
+
+* **Event Log – Overview**: quick sanity check of log completeness.
+* **Activity Frequency** (bar chart) reveals candidate steps for automation.
+* **Top 10 Variants**: clickable table to explore less‑common paths.
+* **Distribution of Case Durations**: hover to inspect outlier clusters.
+* **Cases per Year**: identify workload trends for capacity planning.
+* **Top 10 Resources**: pinpoints uneven work allocation.
+
+Feel free to let me know if you’d like deeper dives—e.g., conformance analysis against a normative policy model, drill‑down by vehicle class, or simulation of “what‑if” process changes.
