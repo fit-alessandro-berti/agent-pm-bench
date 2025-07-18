@@ -71,7 +71,7 @@ def write_leaderboard(elo, pairwise, output_file="leaderboard.md"):
     }
 
     # 5) build markdown lines
-    lines = ["## Overall Leaderboard\n"]
+    lines = ["## Overall ELO Leaderboard\n"]
 
     # -- overall leaderboard table
     header = ["Model", "Average"] + datasets

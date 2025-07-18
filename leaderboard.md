@@ -1,4 +1,4 @@
-## Overall Leaderboard
+## Overall ELO Leaderboard
 
 | Model | Average | bpic2020domestic | ccc19 | receipt | roadtraffic10000 |
 | --- | --- | --- | --- | --- | --- |
