@@ -31,7 +31,7 @@ class PerformPromptThread(threading.Thread):
             pyperclip.copy(self.prompt)
 
             # Wait for user to press Enter
-            print(self.target_path, self.model)
+            print(self.target_path)
             input("press ENTER to continue ->")
 
             # Release the lock immediately after input()
@@ -59,4 +59,4 @@ def clear_nonempty_files(directories):
                 os.remove(path)
 
 
-clear_nonempty_files(["answers", "evaluations"])
+#clear_nonempty_files(["answers", "evaluations"])
