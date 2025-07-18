@@ -3,7 +3,7 @@ import os.path
 from common import *
 
 
-ANSWERING_MODELS = ["o4-mini", "o3", "o3-pro"]
+ANSWERING_MODELS = ["o4-mini", "o3", "o3-pro", "grok-4"]
 
 
 if __name__ == "__main__":

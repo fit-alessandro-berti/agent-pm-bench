@@ -1,0 +1,161 @@
+# Analytical Report on the Process Mining Event Log: Domestic Declarations
+
+## 1. Executive Summary
+This report analyzes the provided event log from a domestic declaration process, likely related to expense reimbursements or travel declarations in an organizational setting (based on BPIC 2020-style data). The log captures activities from submission to payment, involving multiple roles and occasional rejections/resubmissions.
+
+Key findings:
+- **Scale**: 362 events across 74 cases.
+- **Time Span**: From January 9, 2017, to February 14, 2019.
+- **Performance**: Average throughput time per case is approximately 15.2 days, with significant variation (0 to 63 days).
+- **Variants**: 9 unique process variants, with the most common being a simple submission-approval-payment path (39% of cases).
+- **Amounts**: Average declaration amount is €100.72, ranging from €0 to €581.48.
+- **Issues**: 8 rejection events; bottlenecks in approval stages, with waiting times up to 349 hours between administration and budget owner approvals.
+- **Recommendations**: Streamline multi-level approvals to reduce throughput times and rejections; investigate causes of long waits in budget approvals.
+
+The analysis uses process mining techniques to discover the process, evaluate performance, and identify improvement opportunities.
+
+## 2. Data Overview
+The event log contains structured data on declaration processes, with each event recording a timestamp, activity, case details, resource/role, and amount.
+
+| Metric | Value |
+|--------|-------|
+| Number of Events | 362 |
+| Number of Cases | 74 |
+| Time Period | January 9, 2017 – February 14, 2019 |
+| Unique Activities | 11 (listed below) |
+| Unique Roles | 7 (listed below) |
+
+### Unique Activities
+- Declaration SUBMITTED by EMPLOYEE
+- Declaration APPROVED by ADMINISTRATION
+- Declaration FINAL_APPROVED by SUPERVISOR
+- Request Payment
+- Payment Handled
+- Declaration APPROVED by BUDGET OWNER
+- Declaration REJECTED by MISSING
+- Declaration APPROVED by PRE_APPROVER
+- Declaration REJECTED by PRE_APPROVER
+- Declaration REJECTED by EMPLOYEE
+- Declaration SAVED by EMPLOYEE
+
+### Unique Roles
+- EMPLOYEE
+- ADMINISTRATION
+- SUPERVISOR
+- UNDEFINED (likely system-automated steps like payments)
+- BUDGET OWNER
+- MISSING (possibly a flag for incomplete data)
+- PRE_APPROVER
+
+### Declaration Amounts Statistics
+| Statistic | Value (€) |
+|-----------|-----------|
+| Mean | 100.72 |
+| Minimum | 0.00 |
+| Maximum | 581.48 |
+| Standard Deviation | 112.91 |
+
+Amounts vary widely, with some zero-value cases possibly representing drafts or errors.
+
+## 3. Process Discovery
+The process involves submitting a declaration, obtaining approvals (potentially multi-level), handling rejections/resubmissions, and finalizing with payment.
+
+### Activity Frequencies
+Activities reflect a linear approval workflow with branches for rejections.
+
+| Activity | Count |
+|----------|-------|
+| Declaration SUBMITTED by EMPLOYEE | 79 |
+| Declaration FINAL_APPROVED by SUPERVISOR | 78 |
+| Request Payment | 72 |
+| Payment Handled | 72 |
+| Declaration APPROVED by ADMINISTRATION | 33 |
+| Declaration APPROVED by BUDGET OWNER | 14 |
+| Declaration REJECTED by MISSING | 6 |
+| Declaration APPROVED by PRE_APPROVER | 5 |
+| Declaration REJECTED by PRE_APPROVER | 1 |
+| Declaration REJECTED by EMPLOYEE | 1 |
+| Declaration SAVED by EMPLOYEE | 1 |
+
+- Submissions and final approvals are most frequent, indicating most cases complete successfully.
+- Rejections are rare (8 total), but when they occur, they lead to resubmissions.
+
+### Role Involvement
+| Role | Count |
+|------|-------|
+| UNDEFINED | 144 |
+| EMPLOYEE | 81 |
+| SUPERVISOR | 78 |
+| ADMINISTRATION | 33 |
+| BUDGET OWNER | 14 |
+| MISSING | 6 |
+| PRE_APPROVER | 6 |
+
+- System (UNDEFINED) handles payments.
+- Supervisors are involved in nearly all cases.
+
+### Process Variants
+There are 9 variants, showing moderate process variability. The top variant (simple submission-final approval-payment) covers 29 cases (39%).
+
+| Variant | Case Count |
+|---------|------------|
+| Declaration SUBMITTED by EMPLOYEE → Declaration FINAL_APPROVED by SUPERVISOR → Request Payment → Payment Handled | 29 |
+| Declaration SUBMITTED by EMPLOYEE → Declaration APPROVED by ADMINISTRATION → Declaration FINAL_APPROVED by SUPERVISOR → Request Payment → Payment Handled | 18 |
+| Declaration SUBMITTED by EMPLOYEE → Declaration APPROVED by ADMINISTRATION → Declaration APPROVED by BUDGET OWNER → Declaration FINAL_APPROVED by SUPERVISOR → Request Payment → Payment Handled | 14 |
+| Declaration SUBMITTED by EMPLOYEE → Declaration FINAL_APPROVED by SUPERVISOR → Declaration REJECTED by MISSING → Declaration SUBMITTED by EMPLOYEE → Declaration FINAL_APPROVED by SUPERVISOR → Request Payment → Payment Handled | 5 |
+| Declaration SUBMITTED by EMPLOYEE → Declaration APPROVED by PRE_APPROVER → Declaration FINAL_APPROVED by SUPERVISOR → Request Payment → Payment Handled | 4 |
+| Declaration SUBMITTED by EMPLOYEE → Declaration FINAL_APPROVED by SUPERVISOR → Declaration REJECTED by MISSING → Declaration SUBMITTED by EMPLOYEE → Declaration REJECTED by PRE_APPROVER → Declaration REJECTED by EMPLOYEE → Declaration SUBMITTED by EMPLOYEE → Declaration APPROVED by PRE_APPROVER → Declaration FINAL_APPROVED by SUPERVISOR → Request Payment → Payment Handled | 1 |
+| Declaration APPROVED by ADMINISTRATION → Declaration FINAL_APPROVED by SUPERVISOR → Request Payment → Payment Handled | 1 |
+| Declaration SAVED by EMPLOYEE | 1 |
+| Declaration SUBMITTED by EMPLOYEE | 1 |
+
+- 74% of cases follow one of the top 3 variants (straightforward approvals).
+- Variants with rejections add loops, increasing complexity.
+
+## 4. Performance Analysis
+### Throughput Times (Case Duration in Days)
+Throughput is the time from the first to last event per case.
+
+| Statistic | Value (Days) |
+|-----------|--------------|
+| Mean | 15.20 |
+| Median | 13.05 |
+| Minimum | 0.00 |
+| Maximum | 63.29 |
+| Standard Deviation | 10.94 |
+
+- Most cases complete in under 2 weeks, but outliers suggest delays in approvals or resubmissions.
+- Zero-day cases may be incomplete or drafts.
+
+### Bottlenecks (Top 10 Average Waiting Times Between Activities, in Hours)
+Bottlenecks highlight delays between consecutive activities.
+
+| Activity Pair | Average Waiting Time (Hours) |
+|---------------|------------------------------|
+| Declaration APPROVED by ADMINISTRATION → Declaration APPROVED by BUDGET OWNER | 348.84 |
+| Declaration SUBMITTED by EMPLOYEE → Declaration APPROVED by PRE_APPROVER | 327.96 |
+| Declaration REJECTED by MISSING → Declaration SUBMITTED by EMPLOYEE | 254.41 |
+| Declaration APPROVED by ADMINISTRATION → Declaration FINAL_APPROVED by SUPERVISOR | 213.73 |
+| Request Payment → Payment Handled | 92.16 |
+| Declaration FINAL_APPROVED by SUPERVISOR → Request Payment | 89.90 |
+| Declaration APPROVED by BUDGET OWNER → Declaration FINAL_APPROVED by SUPERVISOR | 85.66 |
+| Declaration APPROVED by PRE_APPROVER → Declaration FINAL_APPROVED by SUPERVISOR | 67.21 |
+| Declaration REJECTED by PRE_APPROVER → Declaration REJECTED by EMPLOYEE | 43.46 |
+| Declaration FINAL_APPROVED by SUPERVISOR → Declaration REJECTED by MISSING | 18.18 |
+
+- Major delays occur in budget-related approvals, possibly due to manual reviews or workload.
+- Payment handling is relatively quick but still averages ~4 days.
+
+## 5. Conformance and Enhancement Insights
+- **Conformance**: Most cases conform to an approval-payment model, but 11% involve rejections, indicating potential data quality issues or process non-compliance (e.g., "MISSING" rejections).
+- **Rejections**: 8 events (2.2% of total), primarily "REJECTED by MISSING" (6 cases). These lead to resubmissions, extending throughput by an average of 10-20 days.
+- **Resource Efficiency**: Supervisors handle 78 events; administration 33. Over-reliance on supervisors could be a bottleneck.
+- **Amount Correlation**: No direct correlation analyzed, but higher amounts (>€200) appear in longer-throughput cases, possibly due to extra scrutiny.
+
+## 6. Recommendations
+- **Process Optimization**: Automate simple approvals (e.g., low-amount declarations) to reduce budget owner involvement.
+- **Reduce Rejections**: Implement pre-submission checks to minimize "MISSING" rejections.
+- **Performance Monitoring**: Track waiting times in real-time; set SLAs for approvals (e.g., <48 hours).
+- **Further Analysis**: Use full log for advanced mining (e.g., social network analysis on roles) or simulate improvements with tools like PuLP for optimization.
+
+This report provides a comprehensive view; additional data or tools could enable deeper simulations or predictive analytics.
